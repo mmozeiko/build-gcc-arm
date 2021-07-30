@@ -24,6 +24,7 @@ jobs:
             libisl-dev      \
             xz-utils        \
             texinfo         \
+            patch           \
             p7zip           \
             cmake           \
             make            \

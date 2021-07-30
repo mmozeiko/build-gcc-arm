@@ -9,7 +9,7 @@ To build binaries using Docker, run:
     docker run -ti --rm -v `pwd`:/output -e OUTPUT=/output -w /mnt ubuntu:20.04
     apt-get update
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-        ca-certificates libgmp-dev libmpc-dev libmpfr-dev libisl-dev xz-utils texinfo p7zip cmake make curl m4 gcc g++ mingw-w64
+        ca-certificates libgmp-dev libmpc-dev libmpfr-dev libisl-dev xz-utils texinfo patch p7zip cmake make curl m4 gcc g++ mingw-w64
     /output/build.sh 32
     /output/build.sh 64
     exit
