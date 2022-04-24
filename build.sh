@@ -2,16 +2,16 @@
 
 set -eux
 
-ZSTD_VERSION=1.5.0
+ZSTD_VERSION=1.5.2
 GMP_VERSION=6.2.1
 MPFR_VERSION=4.1.0
 MPC_VERSION=1.2.1
 ISL_VERSION=0.23
-EXPAT_VERSION=2.4.1
-BINUTILS_VERSION=2.37
-GCC_VERSION=11.2.0
+EXPAT_VERSION=2.4.8
+BINUTILS_VERSION=2.38
+GCC_VERSION=11.3.0
 MAKE_VERSION=4.2.1
-GDB_VERSION=10.2
+GDB_VERSION=11.2
 
 # set HOST env variable to i686-w64-mingw32 if you want to get 32-bit windows binaries
 HOST=${HOST:-x86_64-w64-mingw32}
@@ -73,15 +73,12 @@ get https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${Z
 get https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/mpfr/mpfr-${MPFR_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz
-get http://isl.gforge.inria.fr/isl-${ISL_VERSION}.tar.xz
+get https://libisl.sourceforge.io/isl-${ISL_VERSION}.tar.xz
 get https://github.com/libexpat/libexpat/releases/download/R_${EXPAT_VERSION//./_}/expat-${EXPAT_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/make/make-${MAKE_VERSION}.tar.bz2
-
-curl -Lo ${SOURCE}/binutils-999566402e.patch "https://sourceware.org/git/?p=binutils-gdb.git;a=patch;h=999566402e"
-patch -N -p1 -d ${SOURCE}/binutils-${BINUTILS_VERSION} < ${SOURCE}/binutils-999566402e.patch || true
 
 mkdir -p ${BUILD}/x-binutils && pushd ${BUILD}/x-binutils
 ${SOURCE}/binutils-${BINUTILS_VERSION}/configure \
@@ -238,6 +235,7 @@ ${SOURCE}/gdb-${GDB_VERSION}/configure \
   --disable-source-highlight           \
   --with-mpfr                          \
   --with-expat                         \
+  --with-libgmp-prefix=${PREFIX}       \
   --with-libmpfr-prefix=${PREFIX}      \
   --with-libexpat-prefix=${PREFIX}     \
   --with-static-standard-libraries
