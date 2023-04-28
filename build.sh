@@ -2,16 +2,16 @@
 
 set -eux
 
-ZSTD_VERSION=1.5.2
+ZSTD_VERSION=1.5.5
 GMP_VERSION=6.2.1
-MPFR_VERSION=4.1.0
-MPC_VERSION=1.2.1
-ISL_VERSION=0.25
-EXPAT_VERSION=2.4.8
-BINUTILS_VERSION=2.39
-GCC_VERSION=12.2.0
+MPFR_VERSION=4.2.0
+MPC_VERSION=1.3.1
+ISL_VERSION=0.26
+EXPAT_VERSION=2.5.0
+BINUTILS_VERSION=2.40
+GCC_VERSION=13.1.0
 MAKE_VERSION=4.2.1
-GDB_VERSION=12.1
+GDB_VERSION=13.1
 
 # set HOST env variable to i686-w64-mingw32 if you want to get 32-bit windows binaries
 HOST=${HOST:-x86_64-w64-mingw32}
@@ -240,7 +240,7 @@ ${SOURCE}/gdb-${GDB_VERSION}/configure \
   --with-libexpat-prefix=${PREFIX}     \
   --with-static-standard-libraries
 make -j`nproc`
-cp gdb/gdb.exe ${FINAL}/bin/
+cp gdb/.libs/gdb.exe ${FINAL}/bin/
 popd
 
 mkdir -p ${BUILD}/make && pushd ${BUILD}/make
