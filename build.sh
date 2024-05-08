@@ -2,16 +2,16 @@
 
 set -eux
 
-ZSTD_VERSION=1.5.5
+ZSTD_VERSION=1.5.6
 GMP_VERSION=6.3.0
-MPFR_VERSION=4.2.0
+MPFR_VERSION=4.2.1
 MPC_VERSION=1.3.1
 ISL_VERSION=0.26
-EXPAT_VERSION=2.5.0
-BINUTILS_VERSION=2.41
-GCC_VERSION=13.2.0
+EXPAT_VERSION=2.6.2
+BINUTILS_VERSION=2.42
+GCC_VERSION=14.1.0
 MAKE_VERSION=4.2.1
-GDB_VERSION=13.2
+GDB_VERSION=14.2
 
 # set HOST env variable to i686-w64-mingw32 if you want to get 32-bit windows binaries
 HOST=${HOST:-x86_64-w64-mingw32}
@@ -79,6 +79,8 @@ get https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/make/make-${MAKE_VERSION}.tar.bz2
+
+curl -Lsf "https://sourceware.org/git/?p=binutils-gdb.git;a=patch;h=45e83f865876e42d22cf4bc242725bb4a25a12e3" | patch -t -N -p1 -d ${SOURCE}/gdb-${GDB_VERSION} || true
 
 mkdir -p ${BUILD}/x-binutils && pushd ${BUILD}/x-binutils
 ${SOURCE}/binutils-${BINUTILS_VERSION}/configure \
@@ -233,12 +235,9 @@ ${SOURCE}/gdb-${GDB_VERSION}/configure \
   --target=${TARGET}                   \
   --disable-werror                     \
   --disable-source-highlight           \
-  --with-mpfr                          \
-  --with-expat                         \
-  --with-libgmp-prefix=${PREFIX}       \
-  --with-libmpfr-prefix=${PREFIX}      \
+  --with-static-standard-libraries     \
   --with-libexpat-prefix=${PREFIX}     \
-  --with-static-standard-libraries
+  --with-{gmp,mpfr,mpc,isl,zstd}=${PREFIX}
 make -j`nproc`
 cp gdb/.libs/gdb.exe ${FINAL}/bin/
 popd
