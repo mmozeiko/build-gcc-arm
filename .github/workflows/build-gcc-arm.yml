@@ -8,11 +8,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        arch: [32, 64]
+
+    outputs:
+      GCC_VERSION: ${{ steps.build.outputs.GCC_VERSION }}
+      GDB_VERSION: ${{ steps.build.outputs.GDB_VERSION }}
+      MAKE_VERSION: ${{ steps.build.outputs.MAKE_VERSION }}
+      OUTPUT_BINARY: ${{ steps.build.outputs.OUTPUT_BINARY }}
+
     steps:
 
       - name: checkout
-        uses: actions/checkout@v2          
+        uses: actions/checkout@v4
 
       - name: install dependencies
         run: |
@@ -34,45 +44,39 @@ jobs:
             g++             \
             mingw-w64
 
-      - name: build 32-bit
-        id: build32
-        run: ./build.sh 32
+      - name: build
+        id: build
+        run: ./build.sh ${{ matrix.arch }}
 
-      - name: build 64-bit
-        id: build64
-        run: ./build.sh 64
-        
+      - name: upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build.outputs.OUTPUT_BINARY }}
+          path: ${{ steps.build.outputs.OUTPUT_BINARY }}.7z
+          if-no-files-found: error
+          compression-level: 0
+
+  release:
+    runs-on: ubuntu-24.04
+    needs: build
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+
       - name: release
-        id: release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.build64.outputs.RELEASE_NAME }}
-          release_name: ${{ steps.build64.outputs.RELEASE_NAME }}
-          body: |
-            GCC v${{ steps.build64.outputs.GCC_VERSION }}
-            GDB v${{ steps.build64.outputs.GDB_VERSION }}
-            Make v${{ steps.build64.outputs.MAKE_VERSION }}
+        run: |
+          echo 'GCC v${{ needs.build.outputs.GCC_VERSION }}'   >>notes.txt
+          echo 'GDB v${{ needs.build.outputs.GDB_VERSION }}'   >>notes.txt
+          echo 'Make v${{ needs.build.outputs.MAKE_VERSION }}' >>notes.txt
+          gh release create gcc-v${{ needs.build.outputs.GCC_VERSION }} -R "${GITHUB_REPOSITORY}" -t 'gcc-v${{ needs.build.outputs.GCC_VERSION }}' -F notes.txt
 
-      - name: upload 32-bit
-        id: upload32
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: get artifacts
+        uses: actions/download-artifact@v4
         with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: ./${{ steps.build32.outputs.OUTPUT_BINARY }}
-          asset_name: ${{ steps.build32.outputs.OUTPUT_BINARY }}
-          asset_content_type: application/x-7z-compressed
+          pattern: gcc-v${{ needs.build.outputs.GCC_VERSION }}-*
+          merge-multiple: true
 
-      - name: upload 64-bit
-        id: upload64
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: ./${{ steps.build64.outputs.OUTPUT_BINARY }}
-          asset_name: ${{ steps.build64.outputs.OUTPUT_BINARY }}
-          asset_content_type: application/x-7z-compressed
+      - name: upload artifacts
+        run: gh release upload 'gcc-v${{ needs.build.outputs.GCC_VERSION }}' gcc-v${{ needs.build.outputs.GCC_VERSION }}-*.7z -R "${GITHUB_REPOSITORY}"
