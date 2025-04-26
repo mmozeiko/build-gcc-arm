@@ -2,16 +2,16 @@
 
 set -eux
 
-ZSTD_VERSION=1.5.6
+ZSTD_VERSION=1.5.7
 GMP_VERSION=6.3.0
-MPFR_VERSION=4.2.1
+MPFR_VERSION=4.2.2
 MPC_VERSION=1.3.1
 ISL_VERSION=0.26
-EXPAT_VERSION=2.6.2
-BINUTILS_VERSION=2.42
-GCC_VERSION=14.2.0
+EXPAT_VERSION=2.7.1
+BINUTILS_VERSION=2.44
+GCC_VERSION=15.1.0
 MAKE_VERSION=4.4.1
-GDB_VERSION=15.1
+GDB_VERSION=16.3
 
 # set HOST env variable to i686-w64-mingw32 if you want to get 32-bit windows binaries
 HOST=${HOST:-x86_64-w64-mingw32}
@@ -79,8 +79,6 @@ get https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.xz
 get https://ftp.gnu.org/gnu/make/make-${MAKE_VERSION}.tar.gz
-
-curl -Lsf "https://sourceware.org/git/?p=binutils-gdb.git;a=patch;h=45e83f865876e42d22cf4bc242725bb4a25a12e3" | patch -t -N -p1 -d ${SOURCE}/gdb-${GDB_VERSION} || true
 
 mkdir -p ${BUILD}/x-binutils && pushd ${BUILD}/x-binutils
 ${SOURCE}/binutils-${BINUTILS_VERSION}/configure \
@@ -229,15 +227,16 @@ make install-gcc install-target-libgcc
 popd
 
 mkdir -p ${BUILD}/gdb && pushd ${BUILD}/gdb
-${SOURCE}/gdb-${GDB_VERSION}/configure \
-  --prefix=${FINAL}                    \
-  --host=${HOST}                       \
-  --target=${TARGET}                   \
-  --disable-werror                     \
-  --disable-source-highlight           \
-  --with-static-standard-libraries     \
-  --with-libexpat-prefix=${PREFIX}     \
-  --with-{gmp,mpfr,mpc,isl,zstd}=${PREFIX}
+${SOURCE}/gdb-${GDB_VERSION}/configure     \
+  --prefix=${FINAL}                        \
+  --host=${HOST}                           \
+  --target=${TARGET}                       \
+  --disable-werror                         \
+  --disable-source-highlight               \
+  --with-static-standard-libraries         \
+  --with-libexpat-prefix=${PREFIX}         \
+  --with-{gmp,mpfr,mpc,isl,zstd}=${PREFIX} \
+  CXXFLAGS="-O2 -D_WIN32_WINNT=0x0600"
 make -j`nproc`
 cp gdb/.libs/gdb.exe ${FINAL}/bin/
 popd

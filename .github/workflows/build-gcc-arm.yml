@@ -26,7 +26,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          sudo apt-get install --no-install-recommends -y \
+          sudo apt install --no-install-recommends -y \
             ca-certificates \
             libgmp-dev      \
             libmpc-dev      \
