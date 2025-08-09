@@ -3,15 +3,34 @@
 set -eux
 
 ZSTD_VERSION=1.5.7
+ZSTD_SHA256=eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3
+
 GMP_VERSION=6.3.0
+GMP_SHA256=a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898
+
 MPFR_VERSION=4.2.2
+MPFR_SHA256=b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01
+
 MPC_VERSION=1.3.1
+MPC_SHA256=ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8
+
 ISL_VERSION=0.26
+ISL_SHA256=a0b5cb06d24f9fa9e77b55fabbe9a3c94a336190345c2555f9915bb38e976504
+
 EXPAT_VERSION=2.7.1
-BINUTILS_VERSION=2.44
-GCC_VERSION=15.1.0
-MAKE_VERSION=4.4.1
+EXPAT_SHA256=354552544b8f99012e5062f7d570ec77f14b412a3ff5c7d8d0dae62c0d217c30
+
+BINUTILS_VERSION=2.45
+BINUTILS_SHA256=c50c0e7f9cb188980e2cc97e4537626b1672441815587f1eab69d2a1bfbef5d2
+
+GCC_VERSION=15.2.0
+GCC_SHA256=438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e
+
 GDB_VERSION=16.3
+GDB_SHA256=bcfcd095528a987917acf9fff3f1672181694926cc18d609c99d0042c00224c5
+
+MAKE_VERSION=4.4.1
+MAKE_SHA256=dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3
 
 # set HOST env variable to i686-w64-mingw32 if you want to get 32-bit windows binaries
 HOST=${HOST:-x86_64-w64-mingw32}
@@ -31,8 +50,10 @@ function get()
 {
   mkdir -p ${SOURCE} && pushd ${SOURCE}
   FILE="${1##*/}"
+  echo "$2 ${FILE}" | sha256sum -c - || rm -f ${FILE}
   if [ ! -f "${FILE}" ]; then
     curl -fL "$1" -o ${FILE}
+    echo "$2 ${FILE}" | sha256sum -c -
     case "${1##*.}" in
     gz|tgz)
       tar --warning=none -xzf ${FILE}
@@ -69,16 +90,16 @@ PREFIX=`pwd`/prefix/${TARGET}
 # final installation folder
 FINAL=`pwd`/${NAME}
 
-get https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz
-get https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VERSION}.tar.xz
-get https://ftp.gnu.org/gnu/mpfr/mpfr-${MPFR_VERSION}.tar.xz
-get https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz
-get https://libisl.sourceforge.io/isl-${ISL_VERSION}.tar.xz
-get https://github.com/libexpat/libexpat/releases/download/R_${EXPAT_VERSION//./_}/expat-${EXPAT_VERSION}.tar.xz
-get https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.xz
-get https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz
-get https://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.xz
-get https://ftp.gnu.org/gnu/make/make-${MAKE_VERSION}.tar.gz
+get https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz              ${ZSTD_SHA256}
+get https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VERSION}.tar.xz                                                        ${GMP_SHA256}
+get https://ftp.gnu.org/gnu/mpfr/mpfr-${MPFR_VERSION}.tar.xz                                                     ${MPFR_SHA256}
+get https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz                                                        ${MPC_SHA256}
+get https://libisl.sourceforge.io/isl-${ISL_VERSION}.tar.xz                                                      ${ISL_SHA256}
+get https://github.com/libexpat/libexpat/releases/download/R_${EXPAT_VERSION//./_}/expat-${EXPAT_VERSION}.tar.xz ${EXPAT_SHA256}
+get https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.xz                                         ${BINUTILS_SHA256}
+get https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz                                     ${GCC_SHA256}
+get https://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.xz                                                        ${GDB_SHA256}
+get https://ftp.gnu.org/gnu/make/make-${MAKE_VERSION}.tar.gz                                                     ${MAKE_SHA256}
 
 mkdir -p ${BUILD}/x-binutils && pushd ${BUILD}/x-binutils
 ${SOURCE}/binutils-${BINUTILS_VERSION}/configure \
